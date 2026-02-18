@@ -1,0 +1,36 @@
+plugins {
+    id 'application'
+}
+
+sourceSets {
+    main {
+        java.srcDirs = ['src']
+    }
+}
+
+application {
+    mainClass = 'com.flappyboldo.game.server.ServerMain'
+}
+
+dependencies {
+    implementation project(':core')
+}
+
+tasks.register('distServer', Jar) {
+    dependsOn tasks.named('classes')
+    dependsOn ':core:jar'
+
+    archiveBaseName = "${rootProject.ext.appName}-server"
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    manifest {
+        attributes('Main-Class': application.mainClass.get())
+    }
+
+    from sourceSets.main.output
+    from {
+        configurations.runtimeClasspath
+            .findAll { it.name.endsWith('.jar') }
+            .collect { zipTree(it) }
+    }
+}

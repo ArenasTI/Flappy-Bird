@@ -1,0 +1,76 @@
+plugins {
+    // Modern desktop execution model with `run` task from Application plugin.
+    id 'application'
+}
+
+sourceSets {
+    main {
+        java.srcDirs = ['src']
+    }
+}
+
+application {
+    mainClass = 'com.flappyboldo.game.desktop.DesktopLauncher'
+}
+
+ext {
+    // Keeps runtime assets resolution stable for desktop:run.
+    assetsDir = file('assets')
+}
+
+dependencies {
+    implementation project(':core')
+
+    // Updated backend: LWJGL2 -> LWJGL3 for modern LibGDX desktop runtime.
+    implementation "com.badlogicgames.gdx:gdx-backend-lwjgl3:${rootProject.ext.gdxVersion}"
+    runtimeOnly "com.badlogicgames.gdx:gdx-platform:${rootProject.ext.gdxVersion}:natives-desktop"
+    runtimeOnly "com.badlogicgames.gdx:gdx-box2d-platform:${rootProject.ext.gdxVersion}:natives-desktop"
+}
+
+tasks.named('run', JavaExec).configure {
+    workingDir = assetsDir
+    standardInput = System.in
+    ignoreExitValue = true
+}
+
+// Fat-jar distribution task modernized from deprecated classesDir/resourcesDir/configurations.compile.
+tasks.register('dist', Jar) {
+    dependsOn tasks.named('classes')
+    dependsOn ':core:jar'
+
+    archiveBaseName = "${rootProject.ext.appName}-desktop"
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    manifest {
+        attributes('Main-Class': application.mainClass.get())
+    }
+
+    from sourceSets.main.output
+    from {
+        configurations.runtimeClasspath
+            .findAll { it.name.endsWith('.jar') }
+            .collect { zipTree(it) }
+    }
+    from assetsDir
+}
+
+eclipse {
+    project {
+        name = "${rootProject.ext.appName}-desktop"
+        linkedResource name: 'assets', type: '2', location: 'PROJECT_LOC/assets'
+    }
+}
+
+tasks.register('afterEclipseImport') {
+    description = 'Post processing after project generation'
+    group = 'IDE'
+
+    doLast {
+        def classpath = new XmlParser().parse(file('.classpath'))
+        new Node(classpath, 'classpathentry', [kind: 'src', path: 'assets'])
+        def writer = new FileWriter(file('.classpath'))
+        def printer = new XmlNodePrinter(new PrintWriter(writer))
+        printer.setPreserveWhitespace(true)
+        printer.print(classpath)
+    }
+}

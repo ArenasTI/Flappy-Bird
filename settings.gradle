@@ -1,0 +1,16 @@
+// Modernized settings for Gradle 8.x: explicit root name + module includes.
+rootProject.name = 'flappy-bird-online'
+
+// Centralized dependency repository definition in settings (modern Gradle practice).
+dependencyResolutionManagement {
+    repositoriesMode = RepositoriesMode.PREFER_PROJECT
+    repositories {
+        mavenCentral()
+        // LibGDX release artifacts are mirrored here for compatibility with legacy modules.
+        maven { url = uri('https://oss.sonatype.org/content/repositories/releases/') }
+        // Optional snapshots repository for edge LibGDX dependencies when needed.
+        maven { url = uri('https://oss.sonatype.org/content/repositories/snapshots/') }
+    }
+}
+
+include 'core', 'desktop', 'server'

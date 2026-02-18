@@ -1,0 +1,45 @@
+plugins {
+    id 'eclipse'
+    id 'idea'
+}
+
+ext {
+    appName = 'Flappy Bird'
+    // Bumped to current stable LibGDX line compatible with Java 17 + Gradle 8.
+    gdxVersion = '1.13.5'
+}
+
+allprojects {
+    version = '1.0.0'
+
+    repositories {
+        // Primary repository for modern Gradle builds.
+        mavenCentral()
+        // Explicit Sonatype release repo to resolve any LibGDX artifacts not mirrored elsewhere.
+        maven { url = uri('https://oss.sonatype.org/content/repositories/releases/') }
+        // Snapshot repo kept for optional pre-release dependencies.
+        maven { url = uri('https://oss.sonatype.org/content/repositories/snapshots/') }
+    }
+}
+
+subprojects {
+    // Shared Java toolchain and encoding modernization (replaces sourceCompatibility = 1.6 era setup).
+    plugins.withType(JavaPlugin).configureEach {
+        java {
+            // Use Java 17 bytecode level without forcing a local toolchain installation.
+            sourceCompatibility = JavaVersion.VERSION_17
+            targetCompatibility = JavaVersion.VERSION_17
+        }
+
+        tasks.withType(JavaCompile).configureEach {
+            options.encoding = 'UTF-8'
+            options.release = 17
+        }
+    }
+}
+
+tasks.named('eclipse').configure {
+    doLast {
+        delete '.project'
+    }
+}

@@ -1,0 +1,22 @@
+plugins {
+    // Modern replacement for legacy `apply plugin: "java"`.
+    id 'java-library'
+}
+
+sourceSets {
+    main {
+        java.srcDirs = ['src']
+    }
+}
+
+dependencies {
+    // Replaces deprecated `compile` with `api`/`implementation` model.
+    api "com.badlogicgames.gdx:gdx:${rootProject.ext.gdxVersion}"
+    implementation "com.badlogicgames.gdx:gdx-box2d:${rootProject.ext.gdxVersion}"
+}
+
+eclipse {
+    project {
+        name = "${rootProject.ext.appName}-core"
+    }
+}
