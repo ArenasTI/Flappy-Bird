@@ -5,3 +5,6 @@ out/
 desktop/build/
 core/build/
 android/build/
+.gradle/
+.gradle-user/
+build/
